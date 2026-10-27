@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>technical-reveal · vanilla</title>
+    <style>
+      body { margin: 0; font: 15px/1.5 system-ui, sans-serif; color: #111; background: #fff; }
+      main { max-width: 880px; margin: 0 auto; padding: 48px 20px 120vh; }
+      .controls { display: flex; gap: 8px; margin: 16px 0; }
+      button { font: inherit; padding: 6px 12px; border: 1px solid #ccc; background: #fff; border-radius: 8px; cursor: pointer; }
+      .spacer { height: 90vh; display: grid; place-items: center; color: #888; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Vanilla JS example</h1>
+      <p>Plays on load. The second one waits until it scrolls into view.</p>
+      <div id="hero"></div>
+      <div class="controls">
+        <button data-a="replay">Replay</button>
+        <button data-a="toggle">Play / Pause</button>
+        <button data-a="blueprint">Blueprint preset</button>
+        <button data-a="ink">Ink preset</button>
+      </div>
+      <div class="spacer">scroll ↓</div>
+      <div id="in-view"></div>
+    </main>
+    <script type="module" src="/src/vanilla.js"></script>
+  </body>
+</html>

@@ -1,5 +1,6 @@
-// TechnicalReveal — framework-free engine. Give it a canvas, an image URL and a config;
+// RevealEngine — framework-free engine. Give it a canvas, an image URL and a resolved config;
 // it plays a CAD-style "drafting" intro that ends in a brush-masked reveal of the image.
+// Most users should use createTechnicalReveal() (../create.js), which wraps this with options & defaults.
 import { analyzeImage } from './analyze.js';
 import { buildScene } from './build.js';
 import { drawPoly, drawNote, drawHead, drawHud } from './render.js';
@@ -10,7 +11,7 @@ export { PALETTES, PALETTE_KEYS } from './palettes.js';
 const MASK_SCALE = 0.25;
 const mk = () => document.createElement('canvas');
 
-export class TechnicalReveal {
+export class RevealEngine {
   constructor(canvas, { onState } = {}) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
@@ -18,7 +19,10 @@ export class TechnicalReveal {
     this.cache = { grid: { idx: 0, u: -1 }, ink: { idx: 0, u: -1, done: 0 } };
     this.onState = onState || (() => {});
     this.time = 0;
-    this.playing = true;
+    this.playing = false;
+    this.visible = true;
+    this.dirty = true;
+    this.completed = false;
     this.cfg = null;
     this.img = null;
     this.an = null;
@@ -37,6 +41,7 @@ export class TechnicalReveal {
     cancelAnimationFrame(this.raf);
     this.ro.disconnect();
     this.stopRecording(true);
+    this.destroyed = true;
   }
 
   // ---------- public API ----------
@@ -62,17 +67,22 @@ export class TechnicalReveal {
     img.crossOrigin = 'anonymous';
     img.decoding = 'async';
     img.src = url;
-    try { await img.decode(); } catch (e) { this.onState({ error: `Could not load image` }); return; }
+    try { await img.decode(); } catch (e) { this.onState({ error: new Error(`technical-reveal: could not load image "${String(url).slice(0, 120)}"`) }); return; }
+    if (this.destroyed) return;
     this.img = img;
     this.onState({ aspect: img.naturalWidth / img.naturalHeight });
     this.need.analyze = this.need.build = this.need.image = true;
-    if (this.cfg?.playback.autoplay !== false) this.replay();
+    if (this.cfg?.playback.autoplay === true) this.replay();
+    else { this.time = 0; this.completed = false; this.dirty = true; }
   }
 
   play() { if (this.time >= this.total()) this.time = 0; this.playing = true; this.emit(); }
   pause() { this.playing = false; this.emit(); }
   toggle() { this.playing ? this.pause() : this.play(); }
-  replay() { this.time = 0; this.playing = true; this.head = null; this.emit(); }
+  replay() { this.time = 0; this.playing = true; this.head = null; this.completed = false; this.dirty = true; this.emit(); }
+  /** Jump to a point of the animation, 0..1. */
+  seek(u) { this.time = clamp(u) * (this.cfg?.playback.duration ?? 1); this.completed = this.time >= (this.cfg?.playback.duration ?? 1); this.dirty = true; }
+  get progress() { return this.cfg ? clamp(this.time / this.cfg.playback.duration) : 0; }
   total() { const p = this.cfg?.playback; return p ? p.duration + p.hold : 1; }
   emit() { this.onState({ playing: this.playing, recording: !!this.rec }); }
 
@@ -120,13 +130,21 @@ export class TechnicalReveal {
       else { c.width = W; c.height = H; }
     }
     this.need.build = this.need.image = true;
+    this.dirty = true;
   }
 
   prepare() {
     if (!this.img || !this.cfg) return false;
     if (this.need.analyze) {
       const t = performance.now();
-      this.an = analyzeImage(this.img, this.cfg.detail);
+      try {
+        this.an = analyzeImage(this.img, this.cfg.detail);
+      } catch (e) {
+        // usually a cross-origin image without CORS headers (canvas pixels are unreadable)
+        this.img = null;
+        this.onState({ error: new Error(`technical-reveal: could not read image pixels (${e.message}). Serve the image from the same origin or with CORS headers.`) });
+        return false;
+      }
       this.need.analyze = false;
       this.need.build = true;
       this.onState({ analyzed: { ms: Math.round(performance.now() - t), chains: this.an.chains.length, arcs: this.an.arcs.length } });
@@ -139,6 +157,7 @@ export class TechnicalReveal {
       this.need.image = true;
       this.resetCaches();
       this.buildFade();
+      this.dirty = true;
     }
     if (this.need.image) { this.prepareImage(); this.need.image = false; }
     return true;
@@ -229,17 +248,23 @@ export class TechnicalReveal {
     this.raf = requestAnimationFrame(this.tick);
     const dt = Math.min(0.1, (now - this.last) / 1000);
     this.last = now;
+    if (!this.visible && !this.rec) return; // offscreen: freeze and skip work
     if (!this.prepare()) return;
     const P = this.cfg.playback;
     if (this.playing && !P.scrub) {
       this.time += dt * P.speed;
+      if (!this.completed && this.time >= P.duration) { this.completed = true; this.onState({ complete: true }); }
       if (this.time >= this.total()) {
         if (this.rec) { this.time = this.total(); this.stopRecording(); this.playing = false; }
-        else if (P.loop) { this.time = 0; this.head = null; }
+        else if (P.loop) { this.time = 0; this.head = null; this.completed = false; }
         else { this.time = this.total(); this.playing = false; this.emit(); }
       }
     }
-    const u = P.scrub ? P.progress : clamp(this.time / P.duration);
+    const u = P.scrub ? clamp(P.progress) : clamp(this.time / P.duration);
+    // idle: nothing animating and nothing changed → don't redraw
+    if (!this.playing && !this.dirty && u === this.lastU && !(this.head && this.head.a > 0.01)) return;
+    this.lastU = u;
+    this.dirty = false;
     this.render(u);
   };
 

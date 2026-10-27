@@ -2,7 +2,7 @@
 // dim: dimensions/leaders · text: numbers & labels · m1..m4: extra inks for "multi" colour mode
 // plate: fill the image area with bg (dark looks); off = transparent canvas that sits on any page
 export const PALETTES = {
-  ink: { plate: false, bg: '#ffffff', grid: '#e4e6ea', line: '#121212', accent: '#2f6bff', dim: '#5b6170', text: '#121212', m1: '#121212', m2: '#2f6bff', m3: '#ff5a1f', m4: '#7a7f8c' },
+  ink: { plate: false, bg: '#ffffff', grid: '#e4e6ea', line: '#747474', accent: '#3376ff', dim: '#5b6170', text: '#121212', m1: '#121212', m2: '#2f6bff', m3: '#ff5a1f', m4: '#7a7f8c' },
   graphite: { plate: false, bg: '#ffffff', grid: '#e2e2de', line: '#2b2b2e', accent: '#ff5a1f', dim: '#55555a', text: '#2b2b2e', m1: '#2b2b2e', m2: '#ff5a1f', m3: '#7a7a80', m4: '#1f6feb' },
   drafting: { plate: false, bg: '#ffffff', grid: '#e6e0d2', line: '#161616', accent: '#c8372d', dim: '#3a3a3a', text: '#161616', m1: '#161616', m2: '#c8372d', m3: '#2f5fb3', m4: '#5a5a5a' },
   blueline: { plate: false, bg: '#ffffff', grid: '#dfe3ff', line: '#2433f5', accent: '#1424c9', dim: '#3445ff', text: '#1424c9', m1: '#2433f5', m2: '#5160ff', m3: '#0d1a9e', m4: '#7a86ff' },

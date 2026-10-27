@@ -1,7 +1,7 @@
 * { box-sizing: border-box; }
 html, body, #root { margin: 0; height: 100%; background: #ffffff; overflow: hidden; }
 .page { position: fixed; inset: 0; display: grid; place-items: center; }
-.stage { display: block; width: min(76vw, calc(86vh * var(--ar))); aspect-ratio: var(--ar); height: auto; }
+.frame { width: min(76vw, calc(86vh * var(--ar))); }
 .status {
   position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%);
   font: 500 11px/1 "IBM Plex Mono", ui-monospace, Menlo, monospace; letter-spacing: 0.04em;

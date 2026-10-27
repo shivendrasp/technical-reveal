@@ -1,0 +1,49 @@
+{
+  "name": "technical-reveal",
+  "version": "0.1.1",
+  "description": "Turn any image into a CAD / blueprint-style animated intro: lines draft in, dimensions measure, then a brush reveals the image.",
+  "keywords": ["animation", "canvas", "blueprint", "cad", "technical-drawing", "reveal", "intro", "react"],
+  "license": "MIT",
+  "author": "Shiv",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shivendrasp/technical-reveal.git",
+    "directory": "packages/technical-reveal"
+  },
+  "homepage": "https://github.com/shivendrasp/technical-reveal#readme",
+  "bugs": "https://github.com/shivendrasp/technical-reveal/issues",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./src/index.js",
+  "module": "./src/index.js",
+  "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./react": {
+      "types": "./types/react.d.ts",
+      "default": "./src/react.js"
+    },
+    "./dialkit": {
+      "types": "./types/dialkit.d.ts",
+      "default": "./src/dialkit.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "types",
+    "README.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "dialkit": ">=2.1.0",
+    "react": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "dialkit": { "optional": true },
+    "react": { "optional": true }
+  }
+}
